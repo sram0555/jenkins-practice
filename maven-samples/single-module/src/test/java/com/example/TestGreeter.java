@@ -41,8 +41,9 @@ public class TestGreeter {
 
     assertThat(greeter.greet(someone).length(), is(greaterThan(someone.length())));
   }
+  
     @Test
-  public void intentionallyfailed() {
+  public void intentionallyFailed() {
       assertTrue(false);
   }
 }
