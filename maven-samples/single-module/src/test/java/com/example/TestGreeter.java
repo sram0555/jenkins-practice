@@ -43,8 +43,6 @@ public class TestGreeter {
   }
     @Test
   public void intentionallyfailed() {
-    String someone = "World";
-
-    assertTrue(false);
+      assertTrue(false);
   }
 }
