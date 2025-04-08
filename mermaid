@@ -1,0 +1,46 @@
+%% AKS Baseline Architecture - Mermaid.js Diagram
+%% Copy this into any Mermaid-compatible editor (GitHub, VS Code, Confluence, etc.)
+
+flowchart TB
+    subgraph VNet["Hub Virtual Network (10.0.0.0/16)"]
+        subgraph AKS-Subnet["AKS Subnet (10.0.1.0/24)"]
+            AKS-Nodes["AKS Nodes\n(System/User Pools)"] -->|Azure CNI| AKS-Control["AKS Control Plane\n(Managed by Azure)"]
+            AKS-Nodes -->|Hosts| Pods["App Pods"]
+        end
+
+        subgraph AppGW-Subnet["AppGW Subnet (10.0.2.0/24)"]
+            AppGW["Application Gateway\n(WAF + Ingress)"]
+        end
+
+        subgraph FW-Subnet["AzureFirewallSubnet (10.0.3.0/24)"]
+            AzureFW["Azure Firewall\n(Egress Control)"]
+        end
+
+        subgraph KV-Subnet["KeyVault Subnet (10.0.4.0/24)"]
+            KV["Azure Key Vault\n(Private Endpoint)"]
+        end
+
+        subgraph ACR-Subnet["ACR Subnet (10.0.5.0/24)"]
+            ACR["Azure Container Registry\n(Private Endpoint)"]
+        end
+    end
+
+    %% External Connections
+    Internet -->|HTTPS| AppGW
+    AzureFW -->|Secured Egress| Internet
+
+    %% Internal Traffic
+    AppGW -->|Routes| Pods
+    Pods -->|CSI Driver| KV
+    Pods -->|Pull Images| ACR
+    AKS-Nodes -->|Logs/Metrics| AzureMonitor["Azure Monitor"]
+
+    %% Network Controls
+    AKS-Nodes -.->|UDR: 0.0.0.0/0| AzureFW
+    KV & ACR -.->|Private DNS| AKS-Nodes
+
+    %% Security Boundaries
+    style FW-Subnet stroke:#ff0000,stroke-width:2px
+    style KV-Subnet stroke:#006400,stroke-width:2px
+    style ACR-Subnet stroke:#006400,stroke-width:2px
+    style AppGW-Subnet stroke:#0000ff,stroke-width:2px
